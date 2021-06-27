@@ -26,9 +26,14 @@ def _main():
     z = symbols('z')
 
     # Insert your matrix here, in fractional form on QQ_I
-    polynomial_matrix = Matrix([[I*z - 1, 27*z**2/10, 5*z**-7, z**-4],
-                                [z**-5, 0, z**7/(1+I), z**-1 + z**2 + 1],
-                                [0, 0, z**-15, z**-5],
+    # polynomial_matrix = Matrix([[I*z - 1, 27*z**2/10, 5*z**-7, z**-4],
+    #                             [z**-5, 0, z**7/(1+I), z**-1 + z**2 + 1],
+    #                             [0, 0, z**-15, z**-5],
+    #                             [0, 0, 0, z**2]])
+
+    polynomial_matrix = Matrix([[2*I*z, 1, 1, 1],
+                                [0, 1, 1, 1],
+                                [0, 0, z**-15, 1],
                                 [0, 0, 0, z**2]])
 
     dedekind_weber(polynomial_matrix, z)
@@ -43,7 +48,7 @@ def dedekind_weber(polynomial_matrix, variable):
 
     positive_matrix = _regulatization(polynomial_matrix, variable, min_degree)
 
-    _echelon(positive_matrix, 0, variable)
+    min_degree = _echelon(positive_matrix, 0, variable, min_degree)
 
     _print_result(positive_matrix, min_degree)
 
@@ -67,30 +72,48 @@ def _regulatization(M, z, min_degree):
     return z**-min_degree*M
 
 
-def _echelon(M, level, z):
+def _echelon(M, level, z, min_degree):
     if level == len(M[:, 0]) - 1:
-        return
+        return M, min_degree
 
     M[level:, level:] = _echelon_first_line(M[level:, level:], z)
 
-    _echelon(M, level + 1, z)
+    print('before', level, M)
 
+    M, min_degree = _echelon(M, level + 1, z, min_degree)
+
+    print('current', level, M)
+
+    print(polytools.degree(M[level, level], z), polytools.degree(M[level + 1, level + 1], z))
+    print(polytools.degree(M[level, level], z) < polytools.degree(M[level + 1, level + 1], z))
     while polytools.degree(M[level, level], z) < polytools.degree(M[level + 1, level + 1], z):
+        print('before doing', level, M)
         for i in range(level + 1, len(M[:, 0])):
-            if polytools.degree(M[i, level], z) < polytools.degree(M[level, level], z):
-                M[i, level] = 0
-            elif M[i, level] != 0:
-                all_terms = M[i, level].as_poly(z).all_terms()
-                M[i, level] = sum(
-                    z**n * term for (n,), term in all_terms if n >= polytools.degree(M[level, level], z))
+            # print(M[i, level], M[level, level])
+            _, remainder = div(M[i, level], M[level, level], z)
+            correcao = remainder / M[level, level]
+            for j in range(i, len(M[:, 0])):
+                M[i, j] -= correcao * M[level, j]
 
         second_line = M[level + 1, :]
         M[level + 1, :] = M[level, :]
         M[level, :] = second_line
 
+        new_min_degree = _minimun_degree(M, z)
+        M = _regulatization(M, z, new_min_degree)
+        min_degree += new_min_degree
+
+        print('doing', level, M)
+
         M[level:, level:] = _echelon_first_line(M[level:, level:], z)
 
-        _echelon(M, level + 1, z)
+        M, min_degree = _echelon(M, level + 1, z, min_degree)
+        print('after doing', level, M)
+        print(polytools.degree(M[level, level], z), polytools.degree(M[level + 1, level + 1], z))
+        print(polytools.degree(M[level, level], z) < polytools.degree(M[level + 1, level + 1], z))
+
+    print('after', level, M)
+    return M, min_degree
 
 
 def _echelon_first_line(M, z):
