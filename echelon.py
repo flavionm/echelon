@@ -29,7 +29,7 @@ def _main():
     polynomial_matrix = MutableMatrix([[27*z/10, 27*z**2, 5*z**-7, z**-4],
                                        [0, z**2, z**7, z**-1 + z**2 + 1],
                                        [0, 0, z**-7, z**-5],
-                                       [0, 0, 0, 11/10]])
+                                       [0, 0, 0, 1 + I]])
 
     dedekind_weber(polynomial_matrix, z)
 
