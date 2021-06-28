@@ -29,7 +29,7 @@ def _main():
     polynomial_matrix = MutableMatrix([[27*z/10, 27*z**2, 5*z**-7, z**-4],
                                        [0, z**2, z**7, z**-1 + z**2 + 1],
                                        [0, 0, z**-7, z**-5],
-                                       [0, 0, 0, 1 + I]])
+                                       [0, 0, 0, 11/10]])
 
     dedekind_weber(polynomial_matrix, z)
 
@@ -52,9 +52,8 @@ def dedekind_weber(polynomial_matrix, variable):
 
 def _is_invertible(M):
     determinant = expand(M.det())
-    print(determinant)
+    print('Determinant is', determinant)
     leading_monomials = expand(polytools.LT(determinant))
-    print(leading_monomials)
     return determinant != 0 and determinant == leading_monomials
 
 
