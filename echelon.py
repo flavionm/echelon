@@ -41,7 +41,7 @@ def dedekind_weber(polynomial_matrix, variable):
 
     positive_matrix = _regulatization(polynomial_matrix, variable, min_degree)
 
-    if not _is_invertible(polynomial_matrix):
+    if not _is_invertible(positive_matrix, variable, min_degree):
         raise ValueError('Invalid matrix, must be invertible')
 
     positive_matrix, min_degree = _echelon(
@@ -50,9 +50,9 @@ def dedekind_weber(polynomial_matrix, variable):
     _print_result(positive_matrix, min_degree)
 
 
-def _is_invertible(M):
+def _is_invertible(M, z, min_degree):
     determinant = expand(M.det())
-    print('Determinant is', determinant)
+    print('Determinant is', expand(z**(len(M[:, 0])*min_degree)*determinant))
     leading_monomials = expand(polytools.LT(determinant))
     return determinant != 0 and determinant == leading_monomials
 
